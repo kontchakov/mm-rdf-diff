@@ -54,7 +54,7 @@ public class RDFGraph {
         blankNodesMaps = Stream.of("http://www.w3.org/2001/XMLSchema#string",
                 "http://www.w3.org/2001/XMLSchema#anyType",
                 "http://www.w3.org/2001/XMLSchema#int")
-                .map(s -> Values.iri(s))
+                .map(Values::iri)
                 .map(i -> Map.entry(i, propertyAssertions.getOrDefault(i, Set.of()).stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

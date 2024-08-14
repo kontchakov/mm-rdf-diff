@@ -1,15 +1,11 @@
 package uk.ac.bbk.dcs;
 
-import com.google.common.collect.Comparators;
 import com.google.common.collect.Sets;
-import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,6 +15,11 @@ import java.util.stream.Collectors;
 
 public class RDFDiff {
     public static void main(String[] args) throws IOException {
+        if (args.length < 2) {
+            System.out.println("Usage: RDFDiff <RDF-file-new> <RDF-file-old> [<output-file>]");
+            System.exit(-1);
+        }
+
         String filename1 = args[0];
         RDFGraph graph1 = new RDFGraph(filename1);
         System.out.println(graph1.getClasses());
