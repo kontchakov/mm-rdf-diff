@@ -77,8 +77,8 @@ public class RDFDiff {
             for (IRI p : Sets.union(graph1.getProperties(), graph2.getProperties())) {
                 Set<Map.Entry<Resource, Value>> p1r = graph1.getPropertyResourcePairs(p);
                 Set<Map.Entry<Resource, Value>> p2r = graph2.getPropertyResourcePairs(p);
-                Sets.SetView<Map.Entry<Resource, Value>> diff1 = Sets.difference(p1r, p2r);
-                Sets.SetView<Map.Entry<Resource, Value>> diff2 = Sets.difference(p2r, p1r);
+                Set<Map.Entry<Resource, Value>> diff1 = Sets.difference(p1r, p2r);
+                Set<Map.Entry<Resource, Value>> diff2 = Sets.difference(p2r, p1r);
                 if (diff1.isEmpty() && diff2.isEmpty()) {
                     completeProperties.put(p, p1r.size());
                 }
@@ -89,11 +89,20 @@ public class RDFDiff {
                     newProperties.put(p, p1r.size());
                 }
                 else {
-                    out.println("PROPERTY " + replacePrefixes(p.toString()) + ": " + p1r.size() + " v " + p2r.size() + " = " + (p1r.size() - p2r.size()) + " (" + diff1.size() + " v " + diff2.size() + " = " + (diff1.size() - diff2.size()) + ")");
-                    if (!diff1.isEmpty())
-                        out.println("   DIFF1-2 " + renderDiff(diff1, Comparator.comparing(e -> e.getKey().toString())));
-                    if (!diff2.isEmpty()) {
-                        out.println("   DIFF2-1 " + renderDiff(diff2, Comparator.comparing(e -> e.getKey().toString())));
+                    out.println("PROPERTY " + replacePrefixes(p.toString()) + ": " + p1r.size() + " v " + p2r.size() + " = " + (p1r.size() - p2r.size()));
+                    Map<Resource, Value> mapDiff1 = diff1.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    Map<Resource, Value> mapDiff2 = diff2.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    Map<Resource, String> sdiff = Sets.intersection(mapDiff1.keySet(), mapDiff2.keySet()).stream()
+                            .collect(Collectors.toMap(i -> i, i -> mapDiff1.get(i) + " v " + mapDiff2.get(i)));
+                    if (!sdiff.isEmpty())
+                        out.println("   DIFF " + renderDiff(sdiff.entrySet(), Comparator.comparing(e -> e.getKey().toString())));
+
+                    Set<Map.Entry<Resource, Value>> sdiff1 = diff1.stream().filter(e -> !mapDiff2.containsKey(e.getKey())).collect(Collectors.toSet());
+                    Set<Map.Entry<Resource, Value>> sdiff2 = diff2.stream().filter(e -> !mapDiff1.containsKey(e.getKey())).collect(Collectors.toSet());
+                    if (!sdiff1.isEmpty())
+                        out.println("   DIFF1-2 " + renderDiff(sdiff1, Comparator.comparing(e -> e.getKey().toString())));
+                    if (!sdiff2.isEmpty()) {
+                        out.println("   DIFF2-1 " + renderDiff(sdiff2, Comparator.comparing(e -> e.getKey().toString())));
                     }
                 }
             }
