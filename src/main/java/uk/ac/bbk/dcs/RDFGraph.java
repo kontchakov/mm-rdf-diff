@@ -51,10 +51,7 @@ public class RDFGraph {
  */
         }
 
-        blankNodesMaps = Stream.of("http://www.w3.org/2001/XMLSchema#string",
-                "http://www.w3.org/2001/XMLSchema#anyType",
-                "http://www.w3.org/2001/XMLSchema#int")
-                .map(Values::iri)
+        blankNodesMaps = Stream.of(stringDatatype, anyTypeDatatype, intDatatype)
                 .map(i -> Map.entry(i, propertyAssertions.getOrDefault(i, Set.of()).stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -71,7 +68,9 @@ public class RDFGraph {
     private Map.Entry<Resource, Value> resolveBlankNode(Map.Entry<Resource, Value> e) {
         return e.getValue() instanceof BNode
                 ? Map.entry(e.getKey(), resolveBlankNode(e.getValue()))
-                : e;
+                : e.getValue() instanceof Literal l
+                    ? Map.entry(e.getKey(), normaliseDatatype(l))
+                    : e;
     }
 
     private Value resolveBlankNode(Value v) {
@@ -80,6 +79,17 @@ public class RDFGraph {
                 .<Value>map(m -> Values.literal(m.getValue().get(v).stringValue(), m.getKey()))
                 .findAny()
                 .orElse(v);
+    }
+
+    private final IRI plainLiteralDatatype = Values.iri("http://www.w3.org/1999/02/22-rdf-syntax-ns#PlainLiteral");
+    private final IRI stringDatatype = Values.iri("http://www.w3.org/2001/XMLSchema#string");
+    private final IRI intDatatype = Values.iri("http://www.w3.org/2001/XMLSchema#int");
+    private final IRI anyTypeDatatype = Values.iri("http://www.w3.org/2001/XMLSchema#anyType");
+
+    private Literal normaliseDatatype(Literal l) {
+        return plainLiteralDatatype.equals(l.getDatatype())
+                ? Values.literal(l.stringValue(), stringDatatype)
+                : l;
     }
 
     public Set<IRI> getClasses() {

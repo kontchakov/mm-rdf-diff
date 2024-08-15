@@ -61,18 +61,9 @@ public class RDFDiff {
                         out.println("   DIFF2-1 " + renderDiff(diff2, Comparator.comparing(Object::toString)));
                 }
             }
-            out.println("COMPLETE CLASSES:\n\t" + completeClasses.entrySet().stream()
-                    .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
-                    .sorted()
-                    .collect(Collectors.joining(",\n\t")));
-            out.println("EMPTY CLASSES:\n\t" + emptyClasses.entrySet().stream()
-                    .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
-                    .sorted()
-                    .collect(Collectors.joining(",\n\t")));
-            out.println("NEW CLASSES:\n\t" + newClasses.entrySet().stream()
-                    .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
-                    .sorted()
-                    .collect(Collectors.joining(",\n\t")));
+            out.println("COMPLETE CLASSES:\n\t" + render(completeClasses));
+            out.println("EMPTY CLASSES:\n\t" + render(emptyClasses));
+            out.println("NEW CLASSES:\n\t" + render(newClasses));
 
             for (IRI p : Sets.union(graph1.getProperties(), graph2.getProperties())) {
                 Set<Map.Entry<Resource, Value>> p1r = graph1.getPropertyResourcePairs(p);
@@ -106,26 +97,25 @@ public class RDFDiff {
                     }
                 }
             }
-            out.println("COMPLETE PROPERTIES:\n\t" + completeProperties.entrySet().stream()
-                    .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
-                    .sorted()
-                    .collect(Collectors.joining(",\n\t")));
-            out.println("EMPTY PROPERTIES:\n\t" + emptyProperties.entrySet().stream()
-                    .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
-                    .sorted()
-                    .collect(Collectors.joining(",\n\t")));
-            out.println("NEW PROPERTIES:\n\t" + newProperties.entrySet().stream()
-                    .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
-                    .sorted()
-                    .collect(Collectors.joining(",\n\t")));
+            out.println("COMPLETE PROPERTIES:\n\t" + render(completeProperties));
+            out.println("EMPTY PROPERTIES:\n\t" + render(emptyProperties));
+            out.println("NEW PROPERTIES:\n\t" + render(newProperties));
         }
         finally {
             if (out != System.out)
                 out.close();
         }
     }
+
     private static String replacePrefixes(String s) {
         return s.replaceAll("http://mappingMuseums.dcs.bbk.ac.uk/", "mm:");
+    }
+
+    private static String render(Map<IRI, Integer> map) {
+        return map.entrySet().stream()
+                .map(e -> replacePrefixes(e.getKey().toString()) + " (" + e.getValue() + ")")
+                .sorted()
+                .collect(Collectors.joining(",\n\t"));
     }
 
     private static final int LIMIT = 20_000;
@@ -136,7 +126,7 @@ public class RDFDiff {
         return s;
     }
 
-    private static final int SET_LIMIT = 200;
+    private static final int SET_LIMIT = 20_000;
     private static final String INDENT = "\n\t\t\t";
 
     private static <T> String renderDiff(Set<T> diff, Comparator<T> comparator) {
