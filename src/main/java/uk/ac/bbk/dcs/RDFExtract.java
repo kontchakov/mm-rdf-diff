@@ -15,6 +15,11 @@ import java.util.stream.Collectors;
 
 public class RDFExtract {
     public static void main(String[] args) throws IOException {
+        if (args.length < 2) {
+            System.out.println("Usage: RDFExtract <RDF-file> <property-IRI> [<output-file>]");
+            System.exit(-1);
+        }
+
         String filename1 = args[0];
         RDFGraph graph1 = new RDFGraph(filename1);
         System.out.println(graph1.getClasses());
