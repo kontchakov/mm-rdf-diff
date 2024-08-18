@@ -81,8 +81,8 @@ public class RDFDiff {
                 }
                 else {
                     out.println("PROPERTY " + replacePrefixes(p.toString()) + ": " + p1r.size() + " v " + p2r.size() + " = " + (p1r.size() - p2r.size()));
-                    Map<Resource, Value> mapDiff1 = diff1.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                    Map<Resource, Value> mapDiff2 = diff2.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    Map<Resource, Value> mapDiff1 = diff1.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u1, u2) -> u1));
+                    Map<Resource, Value> mapDiff2 = diff2.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u1, u2) -> u1));
                     Map<Resource, String> sdiff = Sets.intersection(mapDiff1.keySet(), mapDiff2.keySet()).stream()
                             .collect(Collectors.toMap(i -> i, i -> mapDiff1.get(i) + " v " + mapDiff2.get(i)));
                     if (!sdiff.isEmpty())
